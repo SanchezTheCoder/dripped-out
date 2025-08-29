@@ -10,7 +10,6 @@ import { api } from "@/convex/_generated/api";
 import { useMutation, useQuery } from "convex/react";
 import { FormEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
-import { RefreshCw } from "lucide-react";
 
 // Type definition for image objects (matching Convex schema)
 interface ImageObject {
