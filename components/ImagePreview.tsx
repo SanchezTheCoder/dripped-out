@@ -85,10 +85,20 @@ export default function ImagePreview({
           <div key={`${image.type}-${image.index}`} className="group">
             <div className="bg-card border-border hover:border-accent transition-colors overflow-hidden rounded-lg">
               <div className="aspect-square relative">
+                {/* Loading placeholder */}
+                <div className="absolute inset-0 bg-muted animate-pulse rounded-lg" />
+                
                 <img
                   src={image.data.url}
                   alt={`Image ${new Date(image.data.createdAt).toLocaleDateString()}`}
-                  className="w-full h-full object-cover transition-transform group-hover:scale-105"
+                  className="w-full h-full object-cover transition-transform group-hover:scale-105 relative z-10"
+                  loading="lazy"
+                  onLoad={(e) => {
+                    // Ensure smooth transition when image loads
+                    const target = e.target as HTMLImageElement;
+                    target.style.opacity = '1';
+                  }}
+                  style={{ opacity: 0, transition: 'opacity 0.3s ease-in-out' }}
                   onError={(e) => {
                     // Fallback to placeholder if image fails to load
                     const target = e.target as HTMLImageElement;

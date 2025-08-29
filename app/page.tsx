@@ -69,7 +69,7 @@ export default function Home() {
 
     // Only update if the actual content has changed, not just references
     if (currentGeneratedLength !== prevGeneratedLengthRef.current ||
-        currentImagesLength !== prevImagesLengthRef.current) {
+      currentImagesLength !== prevImagesLengthRef.current) {
       setDisplayedImages(generatedImages.slice(0, IMAGES_PER_PAGE));
       setCurrentPage(0);
 
@@ -107,9 +107,9 @@ export default function Home() {
   const isQuotaError = (error: unknown): boolean => {
     const errorMessage = error instanceof Error ? error.message : String(error || '');
     return errorMessage.includes('quota') ||
-           errorMessage.includes('RESOURCE_EXHAUSTED') ||
-           errorMessage.includes('rate limit') ||
-           errorMessage.includes('429');
+      errorMessage.includes('RESOURCE_EXHAUSTED') ||
+      errorMessage.includes('rate limit') ||
+      errorMessage.includes('429');
   };
 
   const handleImageCapture = async (imageData: string) => {
@@ -183,7 +183,7 @@ export default function Home() {
     }
   };
 
-  async function handleSendImage(event: FormEvent) {
+  const handleSendImage = async (event: FormEvent) => {
     event.preventDefault();
     if (!selectedImage) return;
 
