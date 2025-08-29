@@ -1,4 +1,5 @@
-import { useEffect, useRef } from "react";
+import { Button } from "./ui/button";
+
 
 
 interface UploadedImage {
@@ -12,6 +13,9 @@ interface UploadedImage {
 interface ImagePreviewProps {
   images: string[]; // Keeping for compatibility, but will be empty
   uploadedImages?: UploadedImage[];
+  totalImages?: number; // Total count of all generated images
+  currentPage?: number; // Current page number for pagination
+  imagesPerPage?: number; // Number of images per page
   onLoadMore?: () => void;
   hasMore?: boolean;
   isLoading?: boolean;
@@ -19,6 +23,9 @@ interface ImagePreviewProps {
 
 export default function ImagePreview({
   uploadedImages = [],
+  totalImages = 0,
+  currentPage = 0,
+  imagesPerPage = 12,
   onLoadMore,
   hasMore = false,
   isLoading = false
@@ -30,32 +37,7 @@ export default function ImagePreview({
     index
   }));
 
-  const loadingRef = useRef<HTMLDivElement>(null);
 
-  // Intersection Observer for infinite scroll
-  useEffect(() => {
-    if (!onLoadMore || !hasMore || isLoading) return;
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting && onLoadMore) {
-          onLoadMore();
-        }
-      },
-      { threshold: 0.1 }
-    );
-
-    const currentRef = loadingRef.current;
-    if (currentRef) {
-      observer.observe(currentRef);
-    }
-
-    return () => {
-      if (currentRef) {
-        observer.unobserve(currentRef);
-      }
-    };
-  }, [onLoadMore, hasMore, isLoading]);
 
   if (allImages.length === 0 && !isLoading) {
     return (
@@ -74,7 +56,7 @@ export default function ImagePreview({
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <p className="text-sm text-muted-foreground">
-          {allImages.length} AI-generated image{allImages.length !== 1 ? 's' : ''} ✨
+          {totalImages} AI-generated image{totalImages !== 1 ? 's' : ''} ✨
           {isLoading && ' (loading...)'}
         </p>
       </div>
@@ -106,9 +88,7 @@ export default function ImagePreview({
                     }
                   }}
                 />
-                <div className="absolute top-2 left-2 bg-primary text-primary-foreground text-xs px-2 py-1 rounded font-medium">
-                  {allImages.length - image.index}
-                </div>
+
 
                 {/* Generation status overlay */}
                 {(image.data.generationStatus === 'pending' || image.data.generationStatus === 'processing') && (
@@ -127,22 +107,24 @@ export default function ImagePreview({
         ))}
       </div>
 
-      {/* Infinite Scroll Loading Indicator */}
-      {(isLoading || hasMore) && (
-        <div
-          ref={loadingRef}
-          className="flex items-center justify-center py-8"
-        >
-          {isLoading ? (
-            <div className="flex items-center gap-3">
-              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-accent"></div>
-              <span className="text-muted-foreground">Loading more images...</span>
-            </div>
-          ) : hasMore ? (
-            <div className="text-center text-muted-foreground">
-              <div className="text-sm">Scroll down to load more images</div>
-            </div>
-          ) : null}
+      {/* Load More Button */}
+      {hasMore && (
+        <div className="flex items-center justify-center py-6">
+          <Button
+            size="sm"
+            onClick={onLoadMore}
+            disabled={isLoading}
+            variant="outline"
+          >
+            {isLoading ? (
+              <div className="flex items-center gap-2">
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                <span>Loading...</span>
+              </div>
+            ) : (
+              `Load More (${totalImages - allImages.length} remaining)`
+            )}
+          </Button>
         </div>
       )}
     </div>

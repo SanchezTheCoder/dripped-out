@@ -10,7 +10,8 @@ import { api } from "@/convex/_generated/api";
 import { useMutation, useQuery } from "convex/react";
 import { FormEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
-import { Github } from "lucide-react";
+import { Github, GithubIcon } from "lucide-react";
+import Link from "next/link";
 
 // Type definition for image objects (matching Convex schema)
 interface ImageObject {
@@ -80,6 +81,14 @@ export default function Home() {
     }
   }, [generatedImages, images]);
 
+  // Reset pagination when new images are added
+  useEffect(() => {
+    if (generatedImages.length > 0 && displayedImages.length === 0) {
+      setDisplayedImages(generatedImages.slice(0, IMAGES_PER_PAGE));
+      setCurrentPage(0);
+    }
+  }, [generatedImages.length, displayedImages.length]);
+
   // Handle loading more images for infinite scroll
   const handleLoadMore = useCallback(() => {
     if (isLoadingMore) return;
@@ -92,15 +101,13 @@ export default function Home() {
     if (startIndex < totalImages) {
       setIsLoadingMore(true);
 
-      // Simulate loading delay (you can remove this in production)
-      setTimeout(() => {
-        setDisplayedImages(prev => [
-          ...prev,
-          ...generatedImages.slice(startIndex, endIndex)
-        ]);
-        setCurrentPage(nextPage);
-        setIsLoadingMore(false);
-      }, 500);
+      // Load images immediately without artificial delay for fluid experience
+      setDisplayedImages(prev => [
+        ...prev,
+        ...generatedImages.slice(startIndex, endIndex)
+      ]);
+      setCurrentPage(nextPage);
+      setIsLoadingMore(false);
     }
   }, [generatedImages, currentPage, isLoadingMore]);
 
@@ -258,15 +265,17 @@ export default function Home() {
       <div className="flex flex-col items-start justify-start gap-2 w-full">
         <div className="flex items-center gap-3">
           <h1 className="text-2xl sm:text-3xl lg:text-4xl font-semibold">Convex Drip Me Out</h1>
-          <a
+          <Link
             href="https://github.com/michaelshimeles/drip-me-out"
             target="_blank"
             rel="noopener noreferrer"
             className="text-muted-foreground hover:text-foreground transition-colors"
             aria-label="View source code on GitHub"
           >
-            <Github className="h-6 w-6 sm:h-7 sm:w-7 lg:h-8 lg:w-8" />
-          </a>
+            <Button variant="ghost" size="icon">
+              <GithubIcon />
+            </Button>
+          </Link>
         </div>
         <p className="text-sm text-muted-foreground">
           Upload an image or capture a photo to see what you look like with a diamond chain.
@@ -330,6 +339,9 @@ export default function Home() {
                 url: image.url ?? "",
                 generationStatus: image.generationStatus
               }))}
+              totalImages={generatedImages.length}
+              currentPage={currentPage}
+              imagesPerPage={IMAGES_PER_PAGE}
               onLoadMore={handleLoadMore}
               hasMore={displayedImages.length < generatedImages.length}
               isLoading={isLoadingMore}
