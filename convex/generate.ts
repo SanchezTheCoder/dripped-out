@@ -213,12 +213,21 @@ export const generateImage = internalAction({
     } catch (error) {
       console.error(`[generateImage] Failed to generate image:`, error);
 
-      // Mark the original image as failed
-      await ctx.runMutation(api.generate.updateImageStatus, {
-        imageId: originalImageId,
-        status: "failed",
-        error: error instanceof Error ? error.message : 'Unknown error'
-      });
+      // Mark the original image as failed with more detailed error info
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred during generation';
+
+      try {
+        await ctx.runMutation(api.generate.updateImageStatus, {
+          imageId: originalImageId,
+          status: "failed",
+          error: errorMessage
+        });
+        console.log(`[generateImage] Marked image ${originalImageId} as failed: ${errorMessage}`);
+      } catch (updateError) {
+        console.error(`[generateImage] Failed to update image status:`, updateError);
+        // Even if status update fails, log the original error
+        console.error(`[generateImage] Original generation error: ${errorMessage}`);
+      }
     }
   },
 });

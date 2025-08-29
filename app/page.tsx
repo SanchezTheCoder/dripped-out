@@ -10,6 +10,7 @@ import { api } from "@/convex/_generated/api";
 import { useMutation, useQuery } from "convex/react";
 import { FormEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
+import { RefreshCw } from "lucide-react";
 
 // Type definition for image objects (matching Convex schema)
 interface ImageObject {
@@ -52,6 +53,15 @@ export default function Home() {
   const generatedImages = useMemo(() => {
     return images.filter(img => img.isGenerated);
   }, [images]);
+
+  // Check if there are any actively processing images
+  const hasActiveGenerations = useMemo(() => {
+    return images.some(img =>
+      img.generationStatus === 'pending' ||
+      img.generationStatus === 'processing'
+    );
+  }, [images]);
+
 
   // Initialize displayed images when images load (only when content actually changes)
   useEffect(() => {
@@ -317,10 +327,10 @@ export default function Home() {
         </div>
 
         {/* Mobile-optimized generating indicator */}
-        {images.some(img => img.generationStatus === 'pending' || img.generationStatus === 'processing') && (
+        {hasActiveGenerations && (
           <div className="fixed bottom-4 right-4 lg:top-6 lg:right-6 z-50">
             <div className="flex items-center gap-2 bg-card/95 backdrop-blur-sm border border-border rounded-lg px-3 py-2 shadow-lg">
-              <div className="animate-spin rounded-full h-4 w-4 border-b-2"></div>
+              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-accent"></div>
               <span className="text-sm text-muted-foreground font-medium">Generating...</span>
             </div>
           </div>
