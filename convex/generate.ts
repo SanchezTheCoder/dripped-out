@@ -153,7 +153,7 @@ export const generateImage = internalAction({
 
       // Follow the official SDK example: text + inlineData parts
       const contents = [
-        { text: "Add a bust down diamond chain, diamond watch, diamond grills, and make the person smiling with a big smile to the image" },
+        { text: "Add a bust down diamond chain, diamond grills, and make the person smiling with a big smile to the image" },
         {
           inlineData: {
             mimeType,
