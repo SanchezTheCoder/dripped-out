@@ -244,79 +244,87 @@ export default function Home() {
   }
 
   return (
-    <div className="flex flex-col items-center justify-start w-full h-screen p-12">
+    <div className="flex flex-col w-full min-h-screen p-4 lg:p-6">
       <div className="flex flex-col items-start justify-start gap-2 w-full">
-        <h1 className="text-4xl font-semibold">Convex Drip Me Out</h1>
+        <h1 className="text-2xl sm:text-3xl lg:text-4xl font-semibold">Convex Drip Me Out</h1>
         <p className="text-sm text-muted-foreground">
           Upload an image or capture a photo to see what you look like with a diamond chain.
         </p>
       </div>
       {/** Image upload or open camera */}
-      <div className="flex items-start justify-start gap-4 w-full mt-10">
-        <Tabs defaultValue="camera" >
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="camera">Camera</TabsTrigger>
-            <TabsTrigger value="upload">Upload</TabsTrigger>
-          </TabsList>
-          <TabsContent value="upload">
-            <Card className="w-80 flex flex-col">
-              <CardHeader>
-                <CardTitle>Upload Image</CardTitle>
-              </CardHeader>
-              <CardContent className="flex-1 flex flex-col justify-center">
-                <div className="space-y-4">
-                  <Input
-                    type="file"
-                    accept="image/*"
-                    ref={imageInput}
-                    onChange={(event) => setSelectedImage(event.target.files![0])}
-                    disabled={selectedImage !== null}
-                  />
-                  <Button
-                    type="submit"
-                    onClick={handleSendImage}
-                    size="sm"
-                    variant="outline"
-                    className="w-full"
-                    disabled={isUploading || isGenerating || !selectedImage}
-                  >
-                    {isUploading ? "Uploading..." : isGenerating ? "Generating..." : "Upload & Generate"}
-                  </Button>
+      <div className="w-full mt-6 sm:mt-8 lg:mt-10">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8">
+          {/* Camera/Upload Section */}
+          <div className="lg:max-w-2xl w-full">
+            <Tabs defaultValue="camera">
+              <TabsList>
+                <TabsTrigger value="camera" className="text-sm font-medium">📸 Camera</TabsTrigger>
+                <TabsTrigger value="upload" className="text-sm font-medium">📤 Upload</TabsTrigger>
+              </TabsList>
+              <TabsContent value="upload" className="mt-4">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Upload Image</CardTitle>
+                  </CardHeader>
+                  <CardContent className="flex-1 flex flex-col justify-center">
+                    <div className="space-y-4">
+                      <Input
+                        type="file"
+                        accept="image/*"
+                        ref={imageInput}
+                        onChange={(event) => setSelectedImage(event.target.files![0])}
+                        disabled={selectedImage !== null}
+                        className="w-full"
+                      />
+                      <Button
+                        type="submit"
+                        onClick={handleSendImage}
+                        size="sm"
+                        variant="outline"
+                        className="w-full h-11"
+                        disabled={isUploading || isGenerating || !selectedImage}
+                      >
+                        {isUploading ? "Uploading..." : isGenerating ? "Generating..." : "Upload & Generate"}
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+              <TabsContent value="camera" className="mt-4">
+                <div className="w-full">
+                  <Webcam onCapture={handleImageCapture} isUploading={isCapturing || isGenerating} />
                 </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-          <TabsContent value="camera">
-            <div className="w-80 h-96">
-              <Webcam onCapture={handleImageCapture} isUploading={isCapturing || isGenerating} />
-            </div>
-          </TabsContent>
-        </Tabs>
-        <div className="w-full px-12">
-          <ImagePreview
-            images={[]}
-            uploadedImages={displayedImages.map(image => ({
-              _id: image._id,
-              body: image.body,
-              createdAt: image.createdAt,
-              url: image.url ?? "",
-              generationStatus: image.generationStatus
-            }))}
-            onLoadMore={handleLoadMore}
-            hasMore={displayedImages.length < generatedImages.length}
-            isLoading={isLoadingMore}
-          />
+              </TabsContent>
+            </Tabs>
+          </div>
 
-          {/* Small generating indicator in top right */}
-          {images.some(img => img.generationStatus === 'pending' || img.generationStatus === 'processing') && (
-            <div className="fixed top-6 right-6 z-50">
-              <div className="flex items-center gap-2 bg-card/95 backdrop-blur-sm border border-border rounded-lg px-3 py-2 shadow-lg">
-                <div className="animate-spin rounded-full h-4 w-4 border-b-2"></div>
-                <span className="text-sm text-muted-foreground font-medium">Generating...</span>
-              </div>
-            </div>
-          )}
+          {/* Image Preview Section */}
+          <div className="w-full">
+            <ImagePreview
+              images={[]}
+              uploadedImages={displayedImages.map(image => ({
+                _id: image._id,
+                body: image.body,
+                createdAt: image.createdAt,
+                url: image.url ?? "",
+                generationStatus: image.generationStatus
+              }))}
+              onLoadMore={handleLoadMore}
+              hasMore={displayedImages.length < generatedImages.length}
+              isLoading={isLoadingMore}
+            />
+          </div>
         </div>
+
+        {/* Mobile-optimized generating indicator */}
+        {images.some(img => img.generationStatus === 'pending' || img.generationStatus === 'processing') && (
+          <div className="fixed bottom-4 right-4 lg:top-6 lg:right-6 z-50">
+            <div className="flex items-center gap-2 bg-card/95 backdrop-blur-sm border border-border rounded-lg px-3 py-2 shadow-lg">
+              <div className="animate-spin rounded-full h-4 w-4 border-b-2"></div>
+              <span className="text-sm text-muted-foreground font-medium">Generating...</span>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Floating Convex Showcase Bubble */}
