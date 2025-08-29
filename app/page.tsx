@@ -1,15 +1,28 @@
 "use client";
-import ImagePreview from "@/components/ImagePreview";
-import Webcam from "@/components/Webcam";
 import ConvexFloatingBubble from "@/components/ConvexFloatingBubble";
+import ImagePreview from "@/components/ImagePreview";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import Webcam from "@/components/Webcam";
 import { api } from "@/convex/_generated/api";
 import { useMutation, useQuery } from "convex/react";
 import { FormEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
+
+// Type definition for image objects (matching Convex schema)
+interface ImageObject {
+  _id: string;
+  body: string;
+  createdAt: number;
+  _creationTime: number;
+  isGenerated?: boolean;
+  originalImageId?: string;
+  generationStatus?: string;
+  generationError?: string;
+  url: string | null;
+}
 
 export default function Home() {
   const generateUploadUrl = useMutation(api.images.generateUploadUrl);
@@ -26,7 +39,7 @@ export default function Home() {
   const [isCapturing, setIsCapturing] = useState(false);
 
   // Pagination state for infinite scroll
-  const [displayedImages, setDisplayedImages] = useState<any[]>([]);
+  const [displayedImages, setDisplayedImages] = useState<ImageObject[]>([]);
   const [currentPage, setCurrentPage] = useState(0);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const IMAGES_PER_PAGE = 12; // 3 columns x 4 rows
@@ -82,8 +95,8 @@ export default function Home() {
   }, [generatedImages, currentPage, isLoadingMore]);
 
   // Helper function to check if error is a quota/rate limit error
-  const isQuotaError = (error: any): boolean => {
-    const errorMessage = error?.message || error?.toString() || '';
+  const isQuotaError = (error: unknown): boolean => {
+    const errorMessage = error instanceof Error ? error.message : String(error || '');
     return errorMessage.includes('quota') ||
            errorMessage.includes('RESOURCE_EXHAUSTED') ||
            errorMessage.includes('rate limit') ||
@@ -286,7 +299,7 @@ export default function Home() {
               _id: image._id,
               body: image.body,
               createdAt: image.createdAt,
-              url: image.url || "",
+              url: image.url ?? "",
               generationStatus: image.generationStatus
             }))}
             onLoadMore={handleLoadMore}

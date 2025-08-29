@@ -35,6 +35,7 @@ const DialogContent = React.forwardRef<
 >(({ className, children, ...props }, ref) => (
   <DialogPortal>
     <DialogOverlay />
+    <DialogPrimitive.Title className="sr-only">Convex Features</DialogPrimitive.Title>
     <DialogPrimitive.Content
       ref={ref}
       className={cn(

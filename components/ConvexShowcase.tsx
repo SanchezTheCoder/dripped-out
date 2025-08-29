@@ -164,16 +164,7 @@ const images = useQuery(api.images.getImages);`,
         return () => clearTimeout(timer);
     }, []);
 
-    const getCategoryIcon = (category: string) => {
-        switch (category) {
-            case "database": return <Database className="w-4 h-4" />;
-            case "storage": return <FileText className="w-4 h-4" />;
-            case "realtime": return <Activity className="w-4 h-4" />;
-            case "actions": return <Server className="w-4 h-4" />;
-            case "scheduling": return <Clock className="w-4 h-4" />;
-            default: return <Sparkles className="w-4 h-4" />;
-        }
-    };
+
 
     const getCategoryColor = (category: string) => {
         switch (category) {
@@ -221,7 +212,7 @@ const images = useQuery(api.images.getImages);`,
                     >
                         <div className="flex items-start gap-3">
                             <div className="p-1.5 rounded-md bg-muted text-muted-foreground flex-shrink-0">
-                                {React.isValidElement(feature.icon) ? React.cloneElement(feature.icon as React.ReactElement<any>, { className: "w-4 h-4" }) : feature.icon}
+                                {feature.icon}
                             </div>
                             <div className="flex-1 min-w-0">
                                 <div className="flex items-center gap-2 mb-1">

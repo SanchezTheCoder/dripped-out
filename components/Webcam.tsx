@@ -115,7 +115,7 @@ export default function Webcam({ onCapture, isUploading = false }: WebcamProps) 
                 <div className="text-center text-muted-foreground">
                   <CameraOff className="w-16 h-16 mx-auto mb-3 text-accent" />
                   <p className="text-lg font-medium">Camera is off</p>
-                  <p className="text-sm">Click "Start Camera" to begin</p>
+                  <p className="text-sm">Click &quot;Start Camera&quot; to begin</p>
                 </div>
               </div>
             )}

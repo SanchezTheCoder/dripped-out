@@ -18,7 +18,6 @@ interface ImagePreviewProps {
 }
 
 export default function ImagePreview({
-  images,
   uploadedImages = [],
   onLoadMore,
   hasMore = false,
@@ -82,7 +81,7 @@ export default function ImagePreview({
 
       {/* 3-Column Grid Layout */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        {allImages.map((image, index) => (
+        {allImages.map((image) => (
           <div key={`${image.type}-${image.index}`} className="group">
             <div className="bg-card border-border hover:border-accent transition-colors overflow-hidden rounded-lg">
               <div className="aspect-square relative">
