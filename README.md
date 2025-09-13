@@ -1,182 +1,116 @@
-# 💎 Drip Me Out
+# 💎 Dripped Out
 
-An AI-powered image transformation app that adds diamond chains to your photos using cutting-edge machine learning and real-time backend processing. Built with Next.js and powered by Convex's revolutionary backend-as-a-service platform.
+An AI-powered “iced out” image app that adds diamond chains to your photos with real-time processing. Rebranded and heavily updated from an early fork — this is now our own project and direction.
+
+## 🔥 What’s new in our build
+
+- **Midnight Neon Luxe theme**: dark default, neon cyan accents, luxe metallic edges
+- **Glass UI**: blurred glass cards with neon hover rings
+- **Film-frame gallery**: grain/scratch overlay, soft bokeh glows, crisp shadows
+- **Glow CTAs**: new `glow` button variant with animated shine
+- **Neon toasts**: tuned Sonner styling to match the theme
+- **Consistency**: tokens centralized in `app/globals.css`, dark mode enforced in `app/layout.tsx`
 
 ## ✨ Features
 
 - **📸 Dual Input Methods**: Upload images or capture live photos with your webcam
-- **🤖 AI-Powered Enhancement**: Uses Google's Gemini 2.5 Flash model for realistic diamond chain additions
-- **⚡ Real-Time Processing**: See generation status updates in real-time with Convex's reactive queries
-- **🎨 Modern UI**: Built with shadcn/ui components and Tailwind CSS for a polished experience
-- **📱 Responsive Design**: Works seamlessly on desktop and mobile devices
-- **🔄 Background Processing**: Convex's scheduler ensures reliable image processing even if users navigate away
-- **💾 File Storage**: Secure image storage with Convex's built-in file management
+- **🤖 AI-Powered Enhancement**: Uses Google’s Gemini 2.5 Flash for realistic diamond chain additions
+- **⚡ Real-Time Processing**: Live generation status via Convex reactive queries
+- **🎨 Tailored UI**: shadcn/ui + Tailwind with a custom neon/film aesthetic
+- **📱 Responsive**: Optimized for desktop and mobile
+- **🔄 Background Jobs**: Convex scheduler runs AI tasks reliably
+- **💾 Storage**: Secure asset storage using Convex Storage
 
 ## 🚀 Tech Stack
 
 ### Frontend
-- **Next.js 15** - React framework with App Router
-- **TypeScript** - Type-safe development
-- **Tailwind CSS** - Utility-first styling
-- **shadcn/ui** - Modern component library built on Radix UI
-- **React Webcam** - Camera integration
-- **Sonner** - Beautiful toast notifications
+- Next.js 15 (App Router)
+- TypeScript
+- Tailwind CSS
+- shadcn/ui (Radix UI)
+- Sonner (toasts)
+- React Webcam
 
 ### Backend (Convex)
-- **Convex Database** - Real-time NoSQL database with automatic schema management
-- **Convex Storage** - Secure file upload and storage
-- **Convex Scheduler** - Background job processing for AI image generation
-- **Convex Actions** - Server-side functions with proper isolation
+- Convex Database (real-time, typed)
+- Convex Storage (file uploads)
+- Convex Scheduler (background jobs)
+- Convex Actions (server functions)
 
-### AI Integration
-- **Google Gemini 2.5 Flash** - Latest multimodal AI model for image editing
-- **Base64 Image Processing** - Efficient image data handling
-
-## 🏗️ Architecture Highlights
-
-### Powered by Convex's Game-Changing Features
-
-**🔥 Real-Time Reactive Queries**
-```typescript
-const images = useQuery(api.images.getImages) || [];
-```
-Convex's reactive queries automatically update your UI when data changes, providing instant feedback during image processing.
-
-**⚡ Background Job Scheduling**
-```typescript
-await ctx.scheduler.runAfter(0, internal.generate.generateImage, {
-  storageId,
-  originalImageId,
-});
-```
-Process-intensive AI tasks run in the background, ensuring your app remains responsive and users never lose their work.
-
-**💾 Secure File Storage**
-```typescript
-const uploadUrl = await generateUploadUrl();
-// Upload directly to Convex Storage
-const result = await fetch(uploadUrl, { method: "POST", body: file });
-```
-Files are uploaded directly to Convex's secure storage with automatic URL generation and access control.
-
-**📊 Real-Time Status Updates**
-```typescript
-// Track processing status in real-time
-images.some(img => img.generationStatus === 'pending' || img.generationStatus === 'processing')
-```
-Monitor AI generation progress with live status updates that automatically sync across all connected clients.
+### AI
+- Google Gemini 2.5 Flash
 
 ## 🛠️ Getting Started
 
 ### Prerequisites
 - Node.js 18+
-- A Convex account ([sign up here](https://www.convex.dev/))
-- Google Gemini API key
+- Convex account
+- Gemini API key
 
 ### Installation
-
-1. **Clone the repository**
 ```bash
 git clone <your-repo-url>
-cd drip-me-out
-```
-
-2. **Install dependencies**
-```bash
+cd dripped-out
 npm install
-```
 
-3. **Set up Convex**
-```bash
+# Initialize Convex locally (generates types and runs services)
 npx convex dev --once
-```
 
-4. **Configure environment variables**
-
-Create a `.env.local` file:
-```bash
+# Env vars
+cat > .env.local << 'EOF'
 CONVEX_DEPLOYMENT=your-convex-deployment-url
 GEMINI_API_KEY=your-gemini-api-key
-```
+EOF
 
-5. **Run the development server**
-```bash
+# Run
 npm run dev
 ```
+Visit http://localhost:3000.
 
-Open [http://localhost:3000](http://localhost:3000) to see your app!
-
-## 🎯 How It Works
-
-1. **Upload or Capture**: Users can either upload an existing image or capture a live photo
-2. **AI Processing**: Images are sent to Convex Storage, then scheduled for AI enhancement using Gemini 2.5 Flash
-3. **Real-Time Updates**: Users see live status updates as their images are processed
-4. **Instant Results**: Transformed images with diamond chains appear automatically once processing completes
-
-## 🏆 Why Convex?
-
-This app showcases Convex's most powerful features:
-
-- **Zero-Config Backend**: No servers to manage, just write functions and deploy
-- **Real-Time by Default**: Every query is reactive and updates automatically
-- **Type Safety**: End-to-end TypeScript support with generated client libraries
-- **Built-in Storage**: File uploads and management without external services
-- **Background Processing**: Reliable job scheduling for long-running tasks
-- **Developer Experience**: Hot reload, automatic deployments, and excellent DX
+## 🎯 How it works
+1. Upload or capture a photo
+2. Image is stored in Convex and an AI job is scheduled
+3. UI updates in real-time as status changes
+4. Final, “dripped out” image appears in the gallery and can be downloaded
 
 ## 📁 Project Structure
-
 ```
-drip-me-out/
-├── app/                    # Next.js App Router
-│   ├── layout.tsx         # Root layout
-│   ├── page.tsx          # Main application page
-│   └── globals.css       # Global styles
-├── components/            # React components
-│   ├── ui/               # shadcn/ui components
-│   ├── Webcam.tsx        # Camera capture component
-│   ├── ImagePreview.tsx  # Image gallery component
-│   └── ConvexShowcase.tsx # Convex feature demonstration
-├── convex/               # Convex backend
-│   ├── schema.ts         # Database schema
-│   ├── images.ts         # Image CRUD operations
-│   ├── generate.ts       # AI image generation logic
-│   └── https.ts          # HTTP utilities
-└── lib/                  # Utility functions
+dripped-out/
+├── app/
+│   ├── layout.tsx      # Dark mode + body-noise overlay
+│   ├── page.tsx        # Main experience
+│   └── globals.css     # Theme tokens + grain/vignette + animations
+├── components/
+│   ├── ui/             # shadcn/ui components (glow button, glass card, sonner)
+│   ├── Webcam.tsx      # Camera capture
+│   └── ImagePreview.tsx# Film-frame gallery
+├── convex/             # Convex backend (schema, storage, generate, actions)
+└── lib/
 ```
 
 ## 🚀 Deployment
-
-### Deploy to Convex
 ```bash
+# Deploy Convex
 npx convex deploy
-```
 
-### Deploy to Vercel
-```bash
+# Build web
 npm run build
-# Deploy using Vercel CLI or connect your GitHub repo
 ```
+Connect the repo to Vercel for zero-config hosting.
 
-## 🤝 Contributing
-
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add some amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+## 📝 Scripts
+```bash
+npm run dev      # Next.js dev server
+npx convex dev   # Start Convex dev services
+npm run build    # Build for production
+```
 
 ## 📄 License
-
-This project is open source and available under the [MIT License](LICENSE).
+MIT — see `LICENSE`.
 
 ## 🙏 Acknowledgments
-
-- **Convex** - For revolutionizing backend development
-- **Google Gemini** - For powerful multimodal AI capabilities
-- **shadcn/ui** - For beautiful, accessible UI components
-- **Vercel** - For the best Next.js deployment platform
+Thanks to Convex, Google Gemini, shadcn/ui, and Vercel. Originally inspired by an earlier concept, but this codebase and design are now our own direction.
 
 ---
 
-**Made with ❤️ and powered by Convex**
+Made with ❤️  and powered by Convex
