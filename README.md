@@ -1,6 +1,6 @@
 # 💎 Dripped Out
 
-An AI-powered “iced out” image app that adds diamond chains to your photos with real-time processing. Rebranded and heavily updated from an early fork — this is now our own project and direction.
+An AI-powered “dripped out” makeover that adds diamond grills, rings, watches, and chains to your photos — paired with nightlife effects like harsh on‑camera flash, slight motion blur, VHS grain, dust/scratches, cool blue tint, and shallow depth‑of‑field — all rendered with real‑time processing. This is a rebrand and major evolution from an early fork; it’s now our own project and direction.
 
 ## 🔥 What’s new in our build
 
