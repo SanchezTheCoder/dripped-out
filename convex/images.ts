@@ -27,7 +27,8 @@ export const getImages = query({
   handler: async (ctx) => {
     const images = await ctx.db.query("images").order("desc").collect();
 
-    // Generate URLs for each image
+    // Generate URLs for each image and filter out any that no longer
+    // have a valid storage URL (e.g., underlying file deleted).
     const imagesWithUrls = await Promise.all(
       images.map(async (image) => ({
         ...image,
@@ -35,6 +36,6 @@ export const getImages = query({
       }))
     );
 
-    return imagesWithUrls;
+    return imagesWithUrls.filter((img) => Boolean(img.url));
   },
 });

@@ -91,8 +91,12 @@ export default function Webcam({ onCapture, isUploading = false }: WebcamProps) 
     };
   }, [stopCamera]);
 
+  
+
   return (
     <div className="space-y-4">
+      
+
       {error && (
         <div className="bg-destructive/10 border border-destructive text-destructive text-sm p-3 rounded-lg">
           {error}
@@ -142,6 +146,7 @@ export default function Webcam({ onCapture, isUploading = false }: WebcamProps) 
         )}
 
         <canvas ref={canvasRef} className="hidden" />
+        
       </div>
 
       <div className="flex justify-center gap-3">

@@ -52,7 +52,8 @@ export default function Home() {
 
   // Memoize generated images to prevent infinite re-renders
   const generatedImages = useMemo(() => {
-    return images.filter(img => img.isGenerated);
+    // Only include generated images that have a valid URL
+    return images.filter(img => img.isGenerated && Boolean(img.url));
   }, [images]);
 
   // Check if there are any actively processing images
