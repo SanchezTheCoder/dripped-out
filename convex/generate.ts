@@ -153,7 +153,7 @@ export const generateImage = internalAction({
 
       // Follow the official SDK example: text + inlineData parts
       const contents = [
-        { text: "Add a bust down diamond chain, if the person is smiling, make have diamond grills" },
+        { text: "Edit my selfie into a flashy night paparazzi shot: diamond grill, iced-out watch by my face, 1 ring; harsh on-camera flash, slight motion blur, VHS grain, cool blue tint, shallow depth of field, high contrast. Use subtle, high-intensity micro-glints only on the jewelry (grill/watch/rings)—tiny, sparse, edge-focused highlights with no bloom or lens flares; zero sparkles on skin, hair, clothes, or background; The background is black and dark and blurry. 35mm film style with noticeable grain, dust, and scratches." },
         {
           inlineData: {
             mimeType,

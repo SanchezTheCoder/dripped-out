@@ -1,4 +1,5 @@
 import { Button } from "./ui/button";
+import { Download } from "lucide-react";
 
 
 
@@ -30,6 +31,32 @@ export default function ImagePreview({
   hasMore = false,
   isLoading = false
 }: ImagePreviewProps) {
+  const downloadImage = async (url: string, suggestedName: string) => {
+    if (!url) return;
+
+    try {
+      const response = await fetch(url, { credentials: "omit" });
+      if (!response.ok) throw new Error(`Failed to fetch image: ${response.status}`);
+      const blob = await response.blob();
+      const downloadUrl = URL.createObjectURL(blob);
+      const anchor = document.createElement("a");
+      anchor.href = downloadUrl;
+      anchor.download = suggestedName;
+      document.body.appendChild(anchor);
+      anchor.click();
+      anchor.remove();
+      URL.revokeObjectURL(downloadUrl);
+    } catch (_err) {
+      // Fallback: open in new tab if we cannot fetch due to CORS or network errors
+      const anchor = document.createElement("a");
+      anchor.href = url;
+      anchor.target = "_blank";
+      anchor.rel = "noopener noreferrer";
+      document.body.appendChild(anchor);
+      anchor.click();
+      anchor.remove();
+    }
+  };
   // Only show uploaded images (captured images are now uploaded automatically)
   const allImages = uploadedImages.map((img, index) => ({
     type: 'uploaded' as const,
@@ -88,6 +115,26 @@ export default function ImagePreview({
                     }
                   }}
                 />
+
+                {/* Actions overlay */}
+                <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <Button
+                    size="icon"
+                    variant="secondary"
+                    aria-label="Download image"
+                    onClick={() =>
+                      downloadImage(
+                        image.data.url,
+                        `dripped-out-${new Date(image.data.createdAt)
+                          .toISOString()
+                          .replace(/[:.]/g, '-')}.png`
+                      )
+                    }
+                    disabled={!image.data.url}
+                  >
+                    <Download />
+                  </Button>
+                </div>
 
 
                 {/* Generation status overlay */}

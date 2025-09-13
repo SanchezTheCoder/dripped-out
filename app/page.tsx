@@ -264,7 +264,7 @@ export default function Home() {
     <div className="flex flex-col w-full min-h-screen p-4 lg:p-6">
       <div className="flex flex-col items-start justify-start gap-2 w-full">
         <div className="flex items-center gap-3">
-          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-semibold">Convex Drip Me Out</h1>
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-semibold">Dripped Out!</h1>
           <Link
             href="https://github.com/michaelshimeles/drip-me-out"
             target="_blank"
