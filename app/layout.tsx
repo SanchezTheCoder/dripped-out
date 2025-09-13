@@ -16,8 +16,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Drip Me Out",
-  description: "Drip Me Out - AI-powered drippy diamond chain generator built with Convex and Next.js",
+  title: "Dripped Out",
+  description: "AI makeover: grills, rings, watches, and chains with nightlife effects — powered by Convex + Gemini.",
 };
 
 export default function RootLayout({

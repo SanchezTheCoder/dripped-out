@@ -73,6 +73,11 @@ Visit http://localhost:3000.
 3. UI updates in real-time as status changes
 4. Final, “dripped out” image appears in the gallery and can be downloaded
 
+### Prompt we use (Gemini 2.5 Flash)
+```
+Edit my photo into a flashy night paparazzi shot, for every visible person: diamond grill, iced-out watch by my face, 1 ring; harsh on-camera flash, slight motion blur, VHS grain, cool blue tint, shallow depth of field, high contrast. Use subtle, high-intensity micro-glints only on the jewelry (grill/watch/rings)—tiny, sparse, edge-focused highlights with no bloom or lens flares; zero sparkles on skin, hair, clothes, or background; The background is black and dark and blurry. 35mm film style with noticeable grain, dust, and scratches.
+```
+
 ## 📁 Project Structure
 ```
 dripped-out/
