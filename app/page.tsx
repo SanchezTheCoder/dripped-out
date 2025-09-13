@@ -267,7 +267,7 @@ export default function Home() {
         <div className="flex items-center gap-3">
           <h1 className="text-2xl sm:text-3xl lg:text-4xl font-semibold">Dripped Out!</h1>
           <Link
-            href="https://github.com/michaelshimeles/drip-me-out"
+            href="https://github.com/SanchezTheCoder/dripped-out"
             target="_blank"
             rel="noopener noreferrer"
             className="text-muted-foreground hover:text-foreground transition-colors"
