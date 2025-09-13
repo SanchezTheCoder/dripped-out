@@ -279,7 +279,7 @@ export default function Home() {
           </Link>
         </div>
         <p className="text-sm text-muted-foreground">
-          Upload an image or capture a photo to see what you look like with a diamond chain.
+         Capture a photo to see what you look like dripped out with diamonds.
         </p>
       </div>
       {/** Image upload or open camera */}

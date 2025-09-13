@@ -92,7 +92,7 @@ export default function ImagePreview({
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {allImages.map((image) => (
           <div key={`${image.type}-${image.index}`} className="group">
-            <div className="bg-card border-border hover:border-accent transition-colors overflow-hidden rounded-lg">
+            <div className="relative overflow-hidden rounded-xl border border-white/10 bg-card/60 backdrop-blur-md shadow-[0_20px_60px_rgba(0,0,0,.6)] transition-all hover:ring-1 hover:ring-accent/30">
               <div className="aspect-square relative">
                 <img
                   src={image.data.url}
@@ -116,11 +116,14 @@ export default function ImagePreview({
                   }}
                 />
 
+                {/* Film grain/scratches overlay */}
+                <div className="pointer-events-none absolute inset-0 opacity-30 mix-blend-screen bg-[repeating-linear-gradient(0deg,rgba(255,255,255,.03)_0_2px,transparent_2px_4px)]" />
+
                 {/* Actions overlay */}
                 <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
                   <Button
                     size="icon"
-                    variant="secondary"
+                    variant="glow"
                     aria-label="Download image"
                     onClick={() =>
                       downloadImage(
