@@ -263,7 +263,7 @@ export default function Home() {
 
   return (
     <div className="flex flex-col w-full min-h-screen p-4 lg:p-6">
-      <div className="flex flex-col items-start justify-start gap-2 w-full">
+      <div className="flex flex-col items-center sm:items-start justify-start gap-2 w-full">
         <div className="flex items-center gap-3">
           <h1 className="text-2xl sm:text-3xl lg:text-4xl font-semibold">Dripped Out!</h1>
           <Link
@@ -278,7 +278,7 @@ export default function Home() {
             </Button>
           </Link>
         </div>
-        <p className="text-sm text-muted-foreground">
+        <p className="text-sm text-muted-foreground text-center sm:text-left">
          Capture a photo to see what you look like dripped out with diamonds.
         </p>
       </div>
