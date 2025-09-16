@@ -3,14 +3,16 @@
 import { useRef, useEffect, useState, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 
-import { Camera, CameraOff, RotateCcw } from 'lucide-react';
+import { Camera, CameraOff } from 'lucide-react';
 
 interface WebcamProps {
   onCapture?: (imageData: string) => void;
   isUploading?: boolean;
+  autoStart?: boolean;       // start camera automatically when true on mount
+  reset?: number;            // increment to clear captured frame and return to live view
 }
 
-export default function Webcam({ onCapture, isUploading = false }: WebcamProps) {
+export default function Webcam({ onCapture, isUploading = false, autoStart = false, reset }: WebcamProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
@@ -28,8 +30,18 @@ export default function Webcam({ onCapture, isUploading = false }: WebcamProps) 
       });
 
       if (videoRef.current) {
+        // Attach the stream and try to play immediately; some browsers
+        // require an explicit play() call after setting srcObject.
         videoRef.current.srcObject = stream;
         streamRef.current = stream;
+        try {
+          await videoRef.current.play();
+        } catch {
+          // Fallback: wait for metadata and then play
+          videoRef.current.onloadedmetadata = () => {
+            videoRef.current?.play().catch(() => {});
+          };
+        }
         setIsActive(true);
       }
     } catch (err) {
@@ -76,20 +88,27 @@ export default function Webcam({ onCapture, isUploading = false }: WebcamProps) 
     }
   }, [videoRef, canvasRef, onCapture]);
 
-  const retakePhoto = useCallback(() => {
-    setCapturedImage('');
-    // Always restart the camera to ensure fresh stream
-    if (isActive) {
-      stopCamera();
-    }
-    startCamera();
-  }, [isActive, startCamera, stopCamera]);
+  // Retake flow removed in favor of a single "Try Again" action elsewhere
 
   useEffect(() => {
+    // Auto-start camera if requested. Avoid depending on isActive because it
+    // would trigger cleanup (stop) immediately after starting.
+    if (autoStart && !isActive) {
+      startCamera();
+    }
     return () => {
       stopCamera();
     };
-  }, [stopCamera]);
+  }, [autoStart, startCamera, stopCamera]);
+
+  // When parent increments `reset`, clear the still frame and restart camera
+  useEffect(() => {
+    if (reset === undefined) return;
+    setCapturedImage('');
+    // Restart camera for a clean state regardless of current isActive
+    stopCamera();
+    startCamera();
+  }, [reset, startCamera, stopCamera]);
 
   
 
@@ -177,15 +196,9 @@ export default function Webcam({ onCapture, isUploading = false }: WebcamProps) 
         )}
 
         {capturedImage && (
-          <>
-            <Button onClick={retakePhoto} className="bg-muted hover:bg-muted/80 text-muted-foreground border border-border flex items-center gap-2 px-6 py-3">
-              <RotateCcw className="w-4 h-4" />
-              🔄 Retake
-            </Button>
-            <Button onClick={stopCamera} className="bg-muted hover:bg-muted/80 text-muted-foreground border border-border px-6 py-3">
-              ⏹️ Stop Camera
-            </Button>
-          </>
+          <Button onClick={stopCamera} className="bg-muted hover:bg-muted/80 text-muted-foreground border border-border px-6 py-3">
+            ⏹️ Stop Camera
+          </Button>
         )}
       </div>
     </div>

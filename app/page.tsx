@@ -7,10 +7,11 @@ import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import Webcam from "@/components/Webcam";
 import { api } from "@/convex/_generated/api";
+import { Id } from "@/convex/_generated/dataModel";
 import { useMutation, useQuery } from "convex/react";
 import { FormEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
-import { Github, GithubIcon } from "lucide-react";
+import { GithubIcon, Loader2, ShieldCheck, Share2, Trash2 } from "lucide-react";
 import Link from "next/link";
 
 // Type definition for image objects (matching Convex schema)
@@ -21,9 +22,12 @@ interface ImageObject {
   _creationTime: number;
   isGenerated?: boolean;
   originalImageId?: string;
+  generatedImageId?: string;
   generationStatus?: string;
   generationError?: string;
   url: string | null;
+  isPublic?: boolean;
+  sharedAt?: number;
 }
 
 export default function Home() {
@@ -31,6 +35,8 @@ export default function Home() {
 
   // Image generation scheduling mutation
   const scheduleImageGeneration = useMutation(api.generate.scheduleImageGeneration);
+  const shareImageMutation = useMutation(api.images.shareImage);
+  const adminDeleteImageMutation = useMutation(api.images.adminDeleteImage);
 
   const imageInput = useRef<HTMLInputElement>(null);
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
@@ -39,6 +45,70 @@ export default function Home() {
 
   const images = useQuery(api.images.getImages) || [];
   const [isCapturing, setIsCapturing] = useState(false);
+  const [latestOriginalId, setLatestOriginalId] = useState<Id<"images"> | null>(null);
+  const latestDetails = useQuery(
+    api.images.getImageDetails,
+    latestOriginalId ? { imageId: latestOriginalId } : undefined
+  );
+  const [hasSharedCurrent, setHasSharedCurrent] = useState(false);
+  const [isSharingToFeed, setIsSharingToFeed] = useState(false);
+  const [adminToken, setAdminToken] = useState<string | null>(null);
+  const [adminInput, setAdminInput] = useState("");
+  const [showAdminControls, setShowAdminControls] = useState(false);
+  // Webcam reset / auto-start when trying again
+  const [webcamReset, setWebcamReset] = useState(0);
+  const [webcamAutoStart, setWebcamAutoStart] = useState(false);
+
+  const downloadImage = useCallback(async (url: string, suggestedName: string) => {
+    if (!url) return;
+
+    try {
+      const response = await fetch(url, { credentials: "omit" });
+      if (!response.ok) throw new Error(`Failed to fetch image: ${response.status}`);
+      const blob = await response.blob();
+      const downloadUrl = URL.createObjectURL(blob);
+      const anchor = document.createElement("a");
+      anchor.href = downloadUrl;
+      anchor.download = suggestedName;
+      document.body.appendChild(anchor);
+      anchor.click();
+      anchor.remove();
+      URL.revokeObjectURL(downloadUrl);
+    } catch (_err) {
+      const anchor = document.createElement("a");
+      anchor.href = url;
+      anchor.target = "_blank";
+      anchor.rel = "noopener noreferrer";
+      document.body.appendChild(anchor);
+      anchor.click();
+      anchor.remove();
+    }
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const stored = window.localStorage.getItem("dripped-out-admin-token");
+    if (stored) {
+      setAdminToken(stored);
+      setAdminInput(stored);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!latestDetails) {
+      setHasSharedCurrent(false);
+      return;
+    }
+
+    setHasSharedCurrent(latestDetails.generated?.isPublic ?? false);
+  }, [latestDetails]);
+
+  const isAdmin = Boolean(adminToken);
+  const latestStatus = latestDetails?.original?.generationStatus ?? null;
+  const latestError = latestDetails?.original?.generationError ?? null;
+  const latestGeneratedImage = latestDetails?.generated ?? null;
+  const isGenerationComplete = Boolean(latestGeneratedImage && latestStatus === 'completed');
+  const shareDisabled = !latestGeneratedImage || hasSharedCurrent || isSharingToFeed;
 
   // Pagination state for infinite scroll
   const [displayedImages, setDisplayedImages] = useState<ImageObject[]>([]);
@@ -58,11 +128,83 @@ export default function Home() {
 
   // Check if there are any actively processing images
   const hasActiveGenerations = useMemo(() => {
-    return images.some(img =>
-      img.generationStatus === 'pending' ||
-      img.generationStatus === 'processing'
-    );
-  }, [images]);
+    if (isGenerating) return true;
+    const status = latestDetails?.original?.generationStatus;
+    return status === 'pending' || status === 'processing';
+  }, [isGenerating, latestDetails?.original?.generationStatus]);
+
+  const handleShareToFeed = useCallback(async () => {
+    if (!latestGeneratedImage?._id) return;
+    setIsSharingToFeed(true);
+    try {
+      await shareImageMutation({ imageId: latestGeneratedImage._id as Id<"images"> });
+      setHasSharedCurrent(true);
+      toast.success("Shared to feed", {
+        description: "Your photo now appears in the gallery.",
+      });
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Unknown error";
+      toast.error("Failed to share", { description: message });
+    } finally {
+      setIsSharingToFeed(false);
+    }
+  }, [latestGeneratedImage?._id, shareImageMutation]);
+
+  const handleTryAgain = useCallback(() => {
+    setLatestOriginalId(null);
+    setHasSharedCurrent(false);
+    setIsSharingToFeed(false);
+    // Nudge the webcam to clear the still and show live view
+    setWebcamAutoStart(true);
+    setWebcamReset((n) => n + 1);
+  }, []);
+
+  const handleAdminTokenSave = useCallback(() => {
+    if (typeof window === "undefined") return;
+    const trimmed = adminInput.trim();
+    if (!trimmed) {
+      window.localStorage.removeItem("dripped-out-admin-token");
+      setAdminToken(null);
+      toast.success("Admin token cleared");
+      return;
+    }
+
+    window.localStorage.setItem("dripped-out-admin-token", trimmed);
+    setAdminToken(trimmed);
+    toast.success("Admin token saved");
+  }, [adminInput]);
+
+  const handleAdminDelete = useCallback(async (imageId: string) => {
+    if (!adminToken) {
+      toast.error("Enter admin token first", {
+        description: "Open admin tools to provide the token.",
+      });
+      setShowAdminControls(true);
+      return;
+    }
+
+    try {
+      const result = await adminDeleteImageMutation({ imageId: imageId as Id<"images">, token: adminToken });
+      if (result?.ok) {
+        toast.success("Image removed");
+      } else if (result?.reason === "INVALID_ADMIN") {
+        toast.error("Invalid admin token", {
+          description: "Check the token in Admin tools and try again.",
+        });
+      } else if (result?.reason === "NOT_CONFIGURED") {
+        toast.error("Admin not configured", {
+          description: "Set ADMIN_DELETE_TOKEN in Convex dev env.",
+        });
+      } else if (result?.reason === "NOT_FOUND") {
+        toast("Already gone", { description: "Image no longer exists." });
+      } else {
+        toast.error("Delete failed", { description: "Unknown error." });
+      }
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Unknown error";
+      toast.error("Delete failed", { description: message });
+    }
+  }, [adminToken, adminDeleteImageMutation]);
 
 
   // Initialize displayed images when images load (only when content actually changes)
@@ -151,7 +293,10 @@ export default function Home() {
       // Step 3: Schedule image generation (this is now resilient to page refreshes)
       setIsGenerating(true);
       try {
-        await scheduleImageGeneration({ storageId });
+        const newOriginalId = await scheduleImageGeneration({ storageId });
+        setLatestOriginalId(newOriginalId as Id<"images">);
+        setHasSharedCurrent(false);
+        setIsSharingToFeed(false);
         console.log("Image generation scheduled successfully!");
 
         // Show success toast
@@ -218,7 +363,10 @@ export default function Home() {
       // Step 3: Schedule image generation (this is now resilient to page refreshes)
       setIsGenerating(true);
       try {
-        await scheduleImageGeneration({ storageId });
+        const newOriginalId = await scheduleImageGeneration({ storageId });
+        setLatestOriginalId(newOriginalId as Id<"images">);
+        setHasSharedCurrent(false);
+        setIsSharingToFeed(false);
         console.log("Image generation scheduled successfully!");
 
         // Show success toast
@@ -277,10 +425,36 @@ export default function Home() {
               <GithubIcon />
             </Button>
           </Link>
+          <Button
+            variant={isAdmin ? "glow" : "ghost"}
+            size="icon"
+            aria-label="Toggle admin tools"
+            onClick={() => setShowAdminControls((prev) => !prev)}
+          >
+            <ShieldCheck className="h-4 w-4" />
+          </Button>
         </div>
         <p className="text-sm text-muted-foreground text-center sm:text-left">
          Capture a photo to see what you look like dripped out with diamonds.
         </p>
+        {showAdminControls && (
+          <div className="w-full max-w-md rounded-lg border border-border/60 bg-card/70 p-3 text-sm">
+            <div className="flex items-center gap-2">
+              <Input
+                type="password"
+                placeholder="Admin token"
+                value={adminInput}
+                onChange={(event) => setAdminInput(event.target.value)}
+              />
+              <Button variant="outline" size="sm" onClick={handleAdminTokenSave}>
+                Save
+              </Button>
+            </div>
+            <p className="mt-2 text-xs text-muted-foreground">
+              Token is stored locally. Clear the field and save to remove access.
+            </p>
+          </div>
+        )}
       </div>
       {/** Image upload or open camera */}
       <div className="w-full mt-6 sm:mt-8 lg:mt-10">
@@ -323,14 +497,111 @@ export default function Home() {
               </TabsContent>
               <TabsContent value="camera" className="mt-4">
                 <div className="w-full">
-                  <Webcam onCapture={handleImageCapture} isUploading={isCapturing || isGenerating} />
+                  <Webcam
+                    onCapture={handleImageCapture}
+                    isUploading={isCapturing || isGenerating}
+                    autoStart={webcamAutoStart}
+                    reset={webcamReset}
+                  />
                 </div>
               </TabsContent>
             </Tabs>
           </div>
 
           {/* Image Preview Section */}
-          <div className="w-full">
+          <div className="w-full space-y-4">
+            {latestOriginalId && (
+              <Card className="border border-white/10 bg-card/70 backdrop-blur-xl">
+                <CardHeader className="pb-2">
+                  <CardTitle className="flex items-center justify-between text-base font-medium">
+                    Latest capture
+                    {hasSharedCurrent && (
+                      <span className="rounded-full bg-accent/10 px-2 py-0.5 text-xs text-accent">
+                        Shared
+                      </span>
+                    )}
+                  </CardTitle>
+                  <p className="text-xs text-muted-foreground">
+                    Preview your result, download it, or share it to the public feed.
+                  </p>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  {latestStatus === 'failed' ? (
+                    <div className="space-y-3">
+                      <p className="text-sm text-red-400">
+                        Generation failed: {latestError ?? 'Unknown error'}
+                      </p>
+                      <Button variant="outline" size="sm" onClick={handleTryAgain}>
+                        Dismiss
+                      </Button>
+                    </div>
+                  ) : !latestGeneratedImage?.url ? (
+                    latestStatus === 'processing' || latestStatus === 'pending' ? (
+                      <div className="flex items-center gap-3 text-sm text-muted-foreground">
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                        <span>
+                          {latestStatus === 'processing'
+                            ? 'Enhancing your photo...'
+                            : 'Queued to generate...'}
+                        </span>
+                      </div>
+                    ) : (
+                      <div className="text-sm text-muted-foreground">
+                        Result unavailable. You can capture another.
+                      </div>
+                    )
+                  ) : (
+                    <div className="space-y-3">
+                      <div className="relative overflow-hidden rounded-xl border border-white/10">
+                        <img
+                          src={latestGeneratedImage.url}
+                          alt="Latest generated result"
+                          className="h-full w-full object-cover"
+                        />
+                        <div className="pointer-events-none absolute inset-0 opacity-30 mix-blend-screen bg-[repeating-linear-gradient(0deg,rgba(255,255,255,.03)_0_2px,transparent_2px_4px)]" />
+                      </div>
+                      <div className="flex flex-wrap items-center gap-2">
+                        <Button
+                          variant={hasSharedCurrent ? "outline" : "glow"}
+                          size="sm"
+                          disabled={shareDisabled}
+                          onClick={handleShareToFeed}
+                        >
+                          {isSharingToFeed
+                            ? 'Sharing...'
+                            : hasSharedCurrent
+                            ? 'Shared'
+                            : 'Share to Feed'}
+                          <Share2 className="ml-2 h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() =>
+                            downloadImage(
+                              latestGeneratedImage.url,
+                              `dripped-out-${new Date(latestGeneratedImage.createdAt)
+                                .toISOString()
+                                .replace(/[:.]/g, '-')}.png`
+                            )
+                          }
+                        >
+                          Download
+                        </Button>
+                        <Button variant="secondary" size="sm" onClick={handleTryAgain}>
+                          Try Again
+                        </Button>
+                      </div>
+                      {!hasSharedCurrent && (
+                        <p className="text-xs text-muted-foreground">
+                          Sharing is optional—skip it to keep this result just for you.
+                        </p>
+                      )}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            )}
             <ImagePreview
               images={[]}
               uploadedImages={displayedImages.map(image => ({
@@ -346,6 +617,8 @@ export default function Home() {
               onLoadMore={handleLoadMore}
               hasMore={displayedImages.length < generatedImages.length}
               isLoading={isLoadingMore}
+              onAdminDelete={handleAdminDelete}
+              isAdmin={isAdmin}
             />
           </div>
         </div>

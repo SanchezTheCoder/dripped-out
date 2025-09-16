@@ -68,6 +68,11 @@ export const saveGeneratedImage = mutation({
       createdAt: Date.now(),
       isGenerated: true,
       originalImageId: originalImageId,
+      isPublic: false,
+    });
+
+    await ctx.db.patch(originalImageId, {
+      generatedImageId,
     });
     return generatedImageId;
   },
@@ -89,6 +94,7 @@ export const scheduleImageGeneration = mutation({
       createdAt: Date.now(),
       isGenerated: false,
       generationStatus: "pending",
+      isPublic: false,
     });
 
     // Schedule the image generation to run immediately

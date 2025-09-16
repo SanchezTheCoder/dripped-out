@@ -1,5 +1,5 @@
 import { Button } from "./ui/button";
-import { Download } from "lucide-react";
+import { Download, Trash2 } from "lucide-react";
 
 
 
@@ -20,6 +20,8 @@ interface ImagePreviewProps {
   onLoadMore?: () => void;
   hasMore?: boolean;
   isLoading?: boolean;
+  onAdminDelete?: (imageId: string) => void;
+  isAdmin?: boolean;
 }
 
 export default function ImagePreview({
@@ -29,7 +31,9 @@ export default function ImagePreview({
   imagesPerPage = 12,
   onLoadMore,
   hasMore = false,
-  isLoading = false
+  isLoading = false,
+  onAdminDelete,
+  isAdmin = false
 }: ImagePreviewProps) {
   const downloadImage = async (url: string, suggestedName: string) => {
     if (!url) return;
@@ -120,7 +124,7 @@ export default function ImagePreview({
                 <div className="pointer-events-none absolute inset-0 opacity-30 mix-blend-screen bg-[repeating-linear-gradient(0deg,rgba(255,255,255,.03)_0_2px,transparent_2px_4px)]" />
 
                 {/* Actions overlay */}
-                <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity flex gap-2">
                   <Button
                     size="icon"
                     variant="glow"
@@ -137,6 +141,16 @@ export default function ImagePreview({
                   >
                     <Download />
                   </Button>
+                  {isAdmin && onAdminDelete && (
+                    <Button
+                      size="icon"
+                      variant="outline"
+                      aria-label="Delete image"
+                      onClick={() => onAdminDelete(image.data._id)}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  )}
                 </div>
 
 
