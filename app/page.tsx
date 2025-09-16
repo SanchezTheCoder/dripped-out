@@ -48,7 +48,7 @@ export default function Home() {
   const [latestOriginalId, setLatestOriginalId] = useState<Id<"images"> | null>(null);
   const latestDetails = useQuery(
     api.images.getImageDetails,
-    latestOriginalId ? { imageId: latestOriginalId } : undefined
+    latestOriginalId ? { imageId: latestOriginalId } : "skip"
   );
   const [hasSharedCurrent, setHasSharedCurrent] = useState(false);
   const [isSharingToFeed, setIsSharingToFeed] = useState(false);
